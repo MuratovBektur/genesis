@@ -8,18 +8,17 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const globalPrefix = 'api';
+  app.setGlobalPrefix(globalPrefix);
 
   if (isDev) {
     const config = new DocumentBuilder()
-      .setTitle('Your title')
-      .setDescription('Your description')
+      .setTitle('Genesis')
       .setVersion('1.0')
-      .addTag('Your tag')
+      .setBasePath(globalPrefix)
       .build();
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup(`${globalPrefix}/explorer`, app, document);
   }
-  app.setGlobalPrefix(globalPrefix);
 
   await app.listen(5000);
 }

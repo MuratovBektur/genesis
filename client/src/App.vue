@@ -1,91 +1,99 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from "vue-router";
-import HelloWorld from "./components/HelloWorld.vue";
+import { ref, computed } from "vue";
+
+import { useAmocrmEntityStore } from "@/stores/amocrmEntity";
+import type {
+  entityCategoryValue,
+  entityCategory,
+} from "@/types";
+
+import BtnComponent from "@/components/btn.vue";
+import DropdownComponent from "@/components/dropdown.vue";
+import EntitiesComponent from "@/components/entities.vue";
+
+const amocrmEntityStore = useAmocrmEntityStore();
+
+const loading = ref<boolean>(false);
+const options: Array<entityCategory> = [
+  {
+    title: "Сделка",
+    value: "leads",
+  },
+  {
+    title: "Контакт",
+    value: "contacts",
+  },
+  {
+    title: "Компания",
+    value: "companies",
+  },
+];
+const selectedEntity = ref<entityCategoryValue | "">("");
+
+async function fetch() {
+  if (!selectedEntity.value) return;
+  try {
+    loading.value = true;
+    await amocrmEntityStore.fetchEntity(
+      selectedEntity.value
+    );
+  } catch (err) {
+    console.error(err);
+  } finally {
+    loading.value = false;
+  }
+}
+
+const entityCategories = computed(
+  () => amocrmEntityStore.entityCategories
+);
 </script>
 
 <template>
-  <header>
-    <img
-      alt="Vue logo"
-      class="logo"
-      src="@/assets/logo.svg"
-      width="125"
-      height="125"
-    />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
+  <div class="amocrm-panel">
+    <div class="amocrm-panel__content">
+      <dropdown-component
+        v-model="selectedEntity"
+        :options="options"
+        :defaultValue="'Выберите сущность'"
+      />
+      <btn-component
+        :disabled="!selectedEntity"
+        :loading="loading"
+        @click="fetch"
+      >
+        Создать
+      </btn-component>
+      <entities-component
+        :options="options"
+        :entityCategories="entityCategories"
+      />
     </div>
-  </header>
-
-  <RouterView />
+  </div>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
+<style scoped lang="scss">
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
+
+*,
+*:before,
+*:after {
+  font-family: Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
+.amocrm-panel {
+  min-height: 100vh;
+  display: flex;
+  margin-top: 30px;
+  justify-content: center;
+  &__content {
     display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
+    flex-direction: column;
+    & > *:not(:last-child) {
+      margin-bottom: 20px;
+    }
   }
 }
 </style>
