@@ -1,0 +1,19 @@
+git pull;
+
+cd client;
+# build new container for build vue app
+docker build -f Dockerfile -t genesis_build_client .;
+# run container
+docker run --name GenesisBuildClient -itd genesis_build_client;
+# copy from container's dist folder to local dist foler
+docker cp GenesisBuildClient:/app/dist .
+# remove container after using;
+docker container rm -f GenesisBuildClient;
+# remove image after using;
+docker rmi -f genesis_build_client;
+
+cd ..;
+
+docker compose down -v;
+docker compose up -d --build;
+docker compose logs -f --tail=100;
