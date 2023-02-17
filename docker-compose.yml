@@ -4,6 +4,8 @@ name: genesis_prod
 
 services:
   server:
+    environment: 
+      - NODE_ENV=prod
     restart: always
     build: server
     command: npm run start:prod
